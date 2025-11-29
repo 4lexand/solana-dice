@@ -1,0 +1,1 @@
+{"version":"0.1.0","name":"degen_flip","instructions":[{"name":"jugar","accounts":[{"name":"user","isMut":true,"isSigner":true},{"name":"systemProgram","isMut":false,"isSigner":false}],"args":[{"name":"ladoElegido","type":"u8"}]}]}
