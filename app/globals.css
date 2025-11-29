@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: #ffffff;
@@ -26,13 +28,13 @@ body {
 }
 
 /* =========================================
-   🎲 DADO 3D SÓLIDO (GRID BLINDADO) 🎲
+   🎲 DADO 3D (VELOCIDAD RÁPIDA + GEOMETRÍA SÓLIDA)
    ========================================= */
 
 .scene {
   width: 120px;
   height: 120px;
-  perspective: 1200px;
+  perspective: 1000px;
   margin: 60px auto;
   position: relative;
   z-index: 10;
@@ -46,6 +48,7 @@ body {
   transition: transform 1s cubic-bezier(0.1, 0.8, 0.1, 1);
 }
 
+/* VELOCIDAD RESTAURADA: 1.5s (Rápido y emocionante) */
 .rolling {
   animation: tumble 1.5s infinite linear;
 }
@@ -60,13 +63,14 @@ body {
   position: absolute;
   width: 120px;
   height: 120px;
-  border-radius: 16px; /* Borde más cuadrado para cerrar esquinas */
+  border-radius: 16px;
   display: flex;
   justify-content: center;
   align-items: center;
   backface-visibility: hidden;
   transition: all 0.5s ease;
   
+  /* GEOMETRÍA BLINDADA */
   box-sizing: border-box; 
   border: 2px solid #999;
   background: linear-gradient(145deg, #ffffff, #e6e6e6);
@@ -74,10 +78,10 @@ body {
 }
 
 /* ==============================================
-   🔥 NIVELES DE PODER (TIERS) 🔥
+   🔥 NIVELES DE PODER (LAVA VIVA RESTAURADA) 🔥
    ============================================== */
 
-/* TIER 1: VERDE */
+/* TIER 1: VERDE (Brillo Estático) */
 .tier-low .cube__face {
   background: linear-gradient(145deg, #ccffcc, #00ff00);
   border-color: #004d00;
@@ -85,37 +89,52 @@ body {
 }
 .tier-low .dot { background: #003300; }
 
-/* TIER 2: AZUL */
+/* TIER 2: AZUL (Respiración) */
 .tier-mid .cube__face {
   background: linear-gradient(135deg, #99ffff, #00ccff);
   border-color: #0088ff;
-  animation: plasma-breathe 3s infinite ease-in-out;
+  animation: plasma-breathe 2s infinite ease-in-out alternate;
 }
 .tier-mid .dot { background: #000066; box-shadow: 0 0 5px #00ffff; }
 
 @keyframes plasma-breathe {
-  0% { box-shadow: 0 0 15px #0088ff; border-color: #0088ff; }
-  50% { box-shadow: 0 0 30px #00aaff; border-color: #66ccff; }
-  100% { box-shadow: 0 0 15px #0088ff; border-color: #0088ff; }
+  0% { box-shadow: 0 0 15px #0088ff; }
+  100% { box-shadow: 0 0 45px #00ffff, 0 0 10px #ffffff; border-color: #ffffff; }
 }
 
-/* TIER 3: LAVA */
+/* TIER 3: LAVA VIVA (El efecto que te gustaba) */
 .tier-high .cube__face {
+  /* Fondo GRANDE (200%) para poder moverlo y crear el efecto de luz interna */
   background: linear-gradient(45deg, #ff3300, #ffaa00, #880000);
   background-size: 200% 200%;
+  
   border: 3px solid #ffaa00;
-  animation: lava-flow 3s ease infinite;
+  
+  /* Animación de flujo continuo */
+  animation: lava-flow 2s ease infinite;
 }
 .tier-high .dot { background: #220000; box-shadow: inset 0 0 5px #ffaa00; }
 
 @keyframes lava-flow {
-  0% { background-position: 0% 50%; box-shadow: 0 0 30px rgba(255, 69, 0, 0.6); border-color: #ff4500; }
-  50% { background-position: 100% 50%; box-shadow: 0 0 50px rgba(255, 140, 0, 0.9); border-color: #ffff00; }
-  100% { background-position: 0% 50%; box-shadow: 0 0 30px rgba(255, 69, 0, 0.6); border-color: #ff4500; }
+  0% {
+    background-position: 0% 50%;
+    box-shadow: 0 0 30px rgba(255, 69, 0, 0.6);
+    border-color: #ff4500;
+  }
+  50% {
+    background-position: 100% 50%; /* Aquí se mueve la luz interna */
+    box-shadow: 0 0 60px rgba(255, 140, 0, 0.9); /* Brillo máximo */
+    border-color: #ffff00;
+  }
+  100% {
+    background-position: 0% 50%;
+    box-shadow: 0 0 30px rgba(255, 69, 0, 0.6);
+    border-color: #ff4500;
+  }
 }
 
 /* =========================================
-   📍 PUNTOS Y POSICIONES (GRID CORREGIDO) 📍
+   📍 PUNTOS Y POSICIONES (GRID FIX) 📍
    ========================================= */
 
 .dot { 
@@ -127,7 +146,6 @@ body {
   box-shadow: inset 0 2px 3px rgba(0,0,0,0.5);
 }
 
-/* Posiciones 3D */
 .cube__face--1  { transform: rotateY(  0deg) translateZ(60.5px); }
 .cube__face--2  { transform: rotateY(180deg) translateZ(60.5px); }
 .cube__face--3  { transform: rotateY( 90deg) translateZ(60.5px); }
@@ -135,53 +153,18 @@ body {
 .cube__face--5  { transform: rotateX( 90deg) translateZ(60.5px); }
 .cube__face--6  { transform: rotateX(-90deg) translateZ(60.5px); }
 
-/* --- Distribución Grid --- */
-
+/* Distribución Grid */
 .face-1 { display: flex; justify-content: center; align-items: center; }
-
-.face-2 { 
-  display: flex; 
-  justify-content: space-between; 
-  padding: 24px; 
-}
-
-.face-3 { 
-  display: grid; 
-  grid-template-columns: 1fr 1fr 1fr; 
-  grid-template-rows: 1fr 1fr 1fr; 
-  padding: 16px;
-}
+.face-2 { display: flex; justify-content: space-between; padding: 24px; }
+.face-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; padding: 16px; }
 .face-3 .dot:nth-child(1) { grid-column: 1; grid-row: 1; justify-self: center; align-self: center; }
 .face-3 .dot:nth-child(2) { grid-column: 2; grid-row: 2; justify-self: center; align-self: center; }
 .face-3 .dot:nth-child(3) { grid-column: 3; grid-row: 3; justify-self: center; align-self: center; }
-
-.face-4 { 
-  display: grid; 
-  grid-template-columns: 1fr 1fr; 
-  grid-template-rows: 1fr 1fr; 
-  gap: 20px; 
-  padding: 24px; 
-  justify-items: center; align-items: center;
-}
-
-/* Cara 5 (El del problema anterior) - AHORA PERFECTO */
-.face-5 { 
-  display: grid; 
-  grid-template-columns: 1fr 1fr 1fr; 
-  grid-template-rows: 1fr 1fr 1fr; 
-  padding: 16px; 
-}
+.face-4 { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 20px; padding: 24px; justify-items: center; align-items: center; }
+.face-5 { display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; padding: 16px; }
 .face-5 .dot:nth-child(1) { grid-column: 1; grid-row: 1; justify-self: center; align-self: center; }
 .face-5 .dot:nth-child(2) { grid-column: 3; grid-row: 1; justify-self: center; align-self: center; }
 .face-5 .dot:nth-child(3) { grid-column: 1; grid-row: 3; justify-self: center; align-self: center; }
 .face-5 .dot:nth-child(4) { grid-column: 3; grid-row: 3; justify-self: center; align-self: center; }
 .face-5 .dot:nth-child(5) { grid-column: 2; grid-row: 2; justify-self: center; align-self: center; }
-
-.face-6 { 
-  display: grid; 
-  grid-template-columns: 1fr 1fr; 
-  grid-template-rows: 1fr 1fr 1fr; 
-  gap: 10px; 
-  padding: 18px; 
-  justify-items: center; align-items: center;
-}
+.face-6 { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; gap: 10px; padding: 18px; justify-items: center; align-items: center; }
