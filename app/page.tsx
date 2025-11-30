@@ -1,4 +1,5 @@
 'use client';
+import CryptoTicker from './components/CryptoTicker';
 import { useState, useEffect, useRef } from 'react';
 import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { Program, AnchorProvider, setProvider, web3 } from '@coral-xyz/anchor'; 
@@ -142,27 +143,35 @@ export default function Home() {
   if (!mounted) return null;
   const apuestas = [0.01, 0.05, 0.1, 0.5, 1.0, 1.5];
 
+ // ... (resto del código igual) ...
+
   return (
     <div className="flex flex-col md:flex-row h-screen w-full bg-black text-white overflow-hidden relative">
         
+        {/* 1. TICKER DE PRECIOS (Fijo arriba) */}
+        <CryptoTicker />
+
         <div className="absolute inset-0 z-0"><StarryBackground /></div>
         
         {ganador && <div className="fixed inset-0 z-[100] pointer-events-none"><Confetti width={windowSize.width} height={windowSize.height} recycle={false} numberOfPieces={500} gravity={0.2} colors={apuesta >= 1.0 ? ['#FF0000', '#FF7700', '#FFFF00'] : (apuesta >= 0.1 ? ['#00FFFF', '#0000FF'] : ['#00FF00', '#AAFF00'])} /></div>}
 
         {/* --- COLUMNA IZQUIERDA: JUEGO --- */}
-        <div className="flex-1 relative flex flex-col items-center justify-center p-1 md:p-4 z-10 h-full overflow-y-auto md:overflow-hidden">
+        {/* AGREGAMOS 'pt-12' o 'pt-16' EXTRA AQUÍ PARA QUE EL TICKER NO TAPE NADA */}
+        <div className="flex-1 relative flex flex-col items-center justify-center p-2 md:p-4 z-10 h-full overflow-y-auto md:overflow-hidden pt-16">
             
-            <div className="absolute top-4 left-4 z-40">{renderWalletButton()}</div>
-            <button onClick={() => setMobileChatOpen(!mobileChatOpen)} className="md:hidden fixed top-4 right-4 z-50 bg-gray-900 p-2.5 rounded-full border border-purple-500/50 text-cyan-400 shadow-xl active:scale-95">{mobileChatOpen ? '✕' : '💬'}</button>
+            {/* Botón Wallet (Lo bajamos un poco más con top-12 o top-14) */}
+            <div className="absolute top-14 left-4 z-40">{renderWalletButton()}</div>
+            
+            <button onClick={() => setMobileChatOpen(!mobileChatOpen)} className="md:hidden fixed top-14 right-4 z-50 bg-gray-900 p-2.5 rounded-full border border-purple-500/50 text-cyan-400 shadow-xl active:scale-95">{mobileChatOpen ? '✕' : '💬'}</button>
 
-            {/* 1. LOGO */}
             <img
                 src="/images/rollrush-logo.png"
                 alt="RollRush Casino Logo"
-                className="w-64 md:w-[450px] lg:w-[600px] h-auto mb-0 z-20 mt-4 md:mt-0 mx-auto drop-shadow-[0_0_35px_rgba(189,0,255,0.5)] hover:scale-105 transition-transform duration-300"
+                className="w-64 md:w-[450px] lg:w-[600px] h-auto mb-0 z-20 mt-8 md:mt-0 mx-auto drop-shadow-[0_0_35px_rgba(189,0,255,0.5)] hover:scale-105 transition-transform duration-300"
             />
 
-            {/* 2. SELECTOR DE APUESTAS */}
+            {/* ... (El resto de tu código del juego: apuestas, dado, panel... sigue igual) ... */}
+            
             <div className="-mt-12 mb-2 flex flex-wrap justify-center gap-2 max-w-[95%] z-30 relative">
                 {apuestas.map((m) => (
                     <button key={m} onClick={() => setApuesta(m)}
@@ -173,7 +182,6 @@ export default function Home() {
                 ))}
             </div>
 
-            {/* 3. DADO */}
             <div className="mb-2 z-10 perspective-container transform scale-75 md:scale-100 origin-center">
                 <div className={`scene ${getDiceTierClass()}`}>
                     <div className={`cube ${girando ? 'rolling' : ''}`} style={{ transform: girando ? '' : dadoRotation }}>
@@ -187,7 +195,6 @@ export default function Home() {
                 </div>
             </div>
 
-            {/* 4. PANEL DE JUEGO */}
             <div className="w-full max-w-sm bg-black/40 border border-purple-500/20 p-3 md:p-5 rounded-3xl backdrop-blur-xl z-20 relative text-center shadow-[0_0_30px_rgba(189,0,255,0.15)]">
                 <p className="text-cyan-400 mb-2 font-bold tracking-widest text-xs md:text-sm font-racing">
                     PLAYING FOR <span className="text-white text-lg ml-1">{apuesta} SOL</span>
@@ -206,7 +213,7 @@ export default function Home() {
         {/* --- CHAT --- */}
         <div className={`fixed inset-0 z-[100] bg-black/95 transition-transform duration-300 transform md:relative md:translate-y-0 md:w-80 md:block md:bg-black/80 md:backdrop-blur-md md:border-l md:border-white/5 ${mobileChatOpen ? 'translate-y-0' : 'translate-y-full md:translate-y-0'}`}>
             <div className="md:hidden flex justify-between items-center p-4 border-b border-gray-800"><h2 className="text-white font-bold font-racing">CHAT</h2><button onClick={() => setMobileChatOpen(false)} className="text-gray-400 p-2">✕</button></div>
-            <div className="h-full w-full pb-20 md:pb-0"><SidebarChat /></div>
+            <div className="h-full w-full pb-20 md:pb-0 pt-12 md:pt-0"><SidebarChat /></div>
         </div>
     </div>
   );

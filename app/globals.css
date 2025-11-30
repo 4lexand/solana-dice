@@ -137,3 +137,51 @@ body {
 .face-5 { display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; padding: 18px; }
 .face-5 .dot:nth-child(1){grid-area:1/1;} .face-5 .dot:nth-child(2){grid-area:1/3;} .face-5 .dot:nth-child(3){grid-area:3/1;} .face-5 .dot:nth-child(4){grid-area:3/3;} .face-5 .dot:nth-child(5){grid-area:2/2;}
 .face-6 { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; gap: 12px; padding: 20px; justify-items: center; align-items: center; }
+
+/* ... (todo tu css anterior) ... */
+
+/* =========================================
+   📈 CRYPTO TICKER (CINTA DE PRECIOS) 📈
+   ========================================= */
+
+.ticker-wrap {
+  width: 100%;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0.8); /* Fondo semitransparente */
+  backdrop-filter: blur(5px); /* Efecto vidrio */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
+  position: absolute; /* Fijo arriba */
+  top: 0;
+  left: 0;
+  z-index: 50; /* Por encima de todo */
+  height: 40px; /* Altura fija delgada */
+  display: flex;
+  align-items: center;
+}
+
+.ticker-move {
+  display: inline-block;
+  white-space: nowrap;
+  padding-right: 100%; /* Espacio para el loop */
+  animation: marquee 30s linear infinite; /* Velocidad del desplazamiento */
+}
+
+.ticker-item {
+  display: inline-block;
+  padding: 0 2rem;
+  font-size: 0.85rem;
+  font-family: monospace; /* Estilo "Hacker/Trader" */
+  font-weight: bold;
+}
+
+/* Animación infinita */
+@keyframes marquee {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); } /* Movemos el 50% porque duplicaremos el contenido */
+}
+
+/* Pausar si pasas el mouse por encima (opcional, buen detalle UX) */
+.ticker-wrap:hover .ticker-move {
+  animation-play-state: paused;
+}
