@@ -6,6 +6,7 @@ import idl from '@/idl.json';
 import dynamic from 'next/dynamic';
 import Confetti from 'react-confetti';
 import SidebarChat from './components/SidebarChat';
+import StarryBackground from './components/StarryBackground';
 
 const WalletMultiButton = dynamic(
   async () => (await import('@solana/wallet-adapter-react-ui')).WalletMultiButton,
@@ -38,7 +39,6 @@ export default function Home() {
   useEffect(() => { 
     setMounted(true); 
     setWindowSize({ width: window.innerWidth, height: window.innerHeight });
-    
     rollingRef.current = new Audio('/sounds/rolling.mp3');
     winRef.current = new Audio('/sounds/win.wav');
     loseRef.current = new Audio('/sounds/lose.wav');
@@ -52,12 +52,9 @@ export default function Home() {
     if(loseRef.current) setupAudio(loseRef.current, 0.5);
   }, []);
 
-  const playSound = (audio: React.MutableRefObject<HTMLAudioElement | null>) => {
-    if (audio.current) { audio.current.currentTime = 0; audio.current.play().catch(() => {}); }
-  };
-  const stopSound = (audio: React.MutableRefObject<HTMLAudioElement | null>) => {
-    if (audio.current) { audio.current.pause(); audio.current.currentTime = 0; }
-  };
+  const startRollingSound = () => { if (rollingRef.current) { rollingRef.current.currentTime = 0; rollingRef.current.play().catch(() => {}); } };
+  const stopRollingSound = () => { if (rollingRef.current) { rollingRef.current.pause(); rollingRef.current.currentTime = 0; } };
+  
   const playEffect = (type: 'win' | 'lose') => {
     const sound = type === 'win' ? winRef.current : loseRef.current;
     if (sound) { sound.currentTime = 0; sound.play().catch(() => {}); }
@@ -78,7 +75,7 @@ export default function Home() {
 
   const jugar = async (lado: number) => {
     if (!wallet) return alert("Connect wallet first!");
-    setLoading(true); setGirando(true); setTxLink(null); setResultado(`Rolling...`); setGanador(false); playSound(rollingRef);
+    setLoading(true); setGirando(true); setTxLink(null); setResultado(`ROLLING...`); setGanador(false); startRollingSound();
 
     try {
       const anchorWeb3 = web3;
@@ -100,21 +97,27 @@ export default function Home() {
       await connection.confirmTransaction({ blockhash: latestBlockHash.blockhash, lastValidBlockHeight: latestBlockHash.lastValidBlockHeight, signature: tx });
       const txDetails = await connection.getParsedTransaction(tx, { commitment: "confirmed" });
       
-      stopSound(rollingRef);
+      stopRollingSound();
 
       if (txDetails?.meta?.logMessages) {
         const logs = txDetails.meta.logMessages.join(" ");
         let caraFinal = 1;
         if (logs.includes("GANASTE")) {
-          setResultado(`🎉 YOU WON! (+${apuesta * 2} SOL)`); setGanador(true); playEffect('win');
+          setResultado(`⚡ YOU WON! (+${apuesta * 2} SOL)`); setGanador(true); playEffect('win');
           caraFinal = obtenerCaraAleatoria(lado === 0 ? 'par' : 'impar');
         } else {
+          // CAMBIO AQUÍ: Texto actualizado
           setResultado("💀 YOU LOST..."); playEffect('lose');
           caraFinal = obtenerCaraAleatoria(lado === 0 ? 'impar' : 'par');
         }
         detenerDado(caraFinal);
       } else { setResultado("Confirmed"); setGirando(false); }
-    } catch (error: any) { console.error(error); stopSound(rollingRef); setResultado("Error"); setGirando(false); } finally { setLoading(false); }
+    } catch (error: any) { 
+        console.error(error); 
+        stopRollingSound();
+        setResultado("Error"); 
+        setGirando(false); 
+    } finally { setLoading(false); }
   };
 
   const detenerDado = (n: number) => {
@@ -126,65 +129,52 @@ export default function Home() {
   const renderWalletButton = () => {
     if (mounted && connected && publicKey) {
       return (
-        <button onClick={disconnect} className="flex items-center gap-2 bg-gray-800/90 hover:bg-gray-700 border border-purple-500/50 text-white px-3 py-2 rounded-xl font-bold transition-all shadow-lg shadow-purple-500/20 backdrop-blur-sm text-sm">
-          <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse flex-shrink-0"></div>
+        <button onClick={disconnect} className="flex items-center gap-2 bg-gray-900 hover:bg-gray-800 border border-cyan-500/50 text-white px-3 py-2 rounded-xl font-bold transition-all shadow-lg shadow-cyan-500/20 backdrop-blur-sm text-sm font-racing">
+          <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse flex-shrink-0"></div>
           <span className="hidden md:inline">{publicKey.toBase58().slice(0, 4)}...{publicKey.toBase58().slice(-4)}</span>
           <span className="md:hidden">Wallet</span>
-          <span className="text-[10px] text-gray-400 ml-1">(Exit)</span> 
         </button>
       );
     }
-    // Ajuste para móvil: Botón más pequeño
-    return <div className="scale-90 origin-top-left"><WalletMultiButton style={{ backgroundColor: '#9333ea' }} /></div>;
+    return <WalletMultiButton style={{ backgroundColor: '#7c3aed', height: '40px' }} />;
   };
 
   if (!mounted) return null;
   const apuestas = [0.01, 0.05, 0.1, 0.5, 1.0, 1.5];
 
   return (
-    // CAMBIO IMPORTANTE: 'h-screen' fijo solo en escritorio (md:h-screen). En móvil es 'min-h-screen'
-    <div className="flex flex-col md:flex-row min-h-screen w-full bg-black text-white font-mono overflow-x-hidden">
+    <div className="flex flex-col md:flex-row h-screen w-full bg-black text-white overflow-hidden relative">
         
-        {ganador && (
-            <div className="fixed inset-0 z-[100] pointer-events-none">
-                <Confetti width={windowSize.width} height={windowSize.height} recycle={false} numberOfPieces={500} gravity={0.2} colors={apuesta >= 1.0 ? ['#FF0000', '#FF7700'] : (apuesta >= 0.1 ? ['#00FFFF', '#0000FF'] : ['#00FF00', '#AAFF00'])} />
-            </div>
-        )}
+        <div className="absolute inset-0 z-0"><StarryBackground /></div>
+        
+        {ganador && <div className="fixed inset-0 z-[100] pointer-events-none"><Confetti width={windowSize.width} height={windowSize.height} recycle={false} numberOfPieces={500} gravity={0.2} colors={apuesta >= 1.0 ? ['#FF0000', '#FF7700', '#FFFF00'] : (apuesta >= 0.1 ? ['#00FFFF', '#0000FF'] : ['#00FF00', '#AAFF00'])} /></div>}
 
-        {/* --- IZQUIERDA: JUEGO --- */}
-        {/* En móvil: Permitimos scroll (overflow-y-auto) y padding extra abajo para que no se corte */}
-        <div className="flex-1 relative flex flex-col items-center justify-start pt-6 p-4 md:justify-center overflow-y-auto md:overflow-hidden pb-20 bg-[radial-gradient(circle_at_center,_#1a1a1a_0%,_#000000_100%)]">
+        {/* --- COLUMNA IZQUIERDA: JUEGO --- */}
+        <div className="flex-1 relative flex flex-col items-center justify-center p-1 md:p-4 z-10 h-full overflow-y-auto md:overflow-hidden">
             
-            {/* Botón Wallet (Esquina superior izquierda, fijo) */}
-            <div className="absolute top-4 left-4 z-40">
-                {renderWalletButton()}
-            </div>
+            <div className="absolute top-4 left-4 z-40">{renderWalletButton()}</div>
+            <button onClick={() => setMobileChatOpen(!mobileChatOpen)} className="md:hidden fixed top-4 right-4 z-50 bg-gray-900 p-2.5 rounded-full border border-purple-500/50 text-cyan-400 shadow-xl active:scale-95">{mobileChatOpen ? '✕' : '💬'}</button>
 
-            {/* BOTÓN FLOTANTE CHAT (Solo móvil, fijo arriba derecha) */}
-            <button 
-                onClick={() => setMobileChatOpen(!mobileChatOpen)}
-                className="md:hidden fixed top-4 right-4 z-50 bg-gray-800/90 p-2.5 rounded-full border border-gray-600 shadow-xl active:scale-95"
-            >
-                {mobileChatOpen ? '❌' : '💬'}
-            </button>
+            {/* 1. LOGO */}
+            <img
+                src="/images/rollrush-logo.png"
+                alt="RollRush Casino Logo"
+                className="w-64 md:w-[450px] lg:w-[600px] h-auto mb-0 z-20 mt-4 md:mt-0 mx-auto drop-shadow-[0_0_35px_rgba(189,0,255,0.5)] hover:scale-105 transition-transform duration-300"
+            />
 
-            <h1 className="text-4xl md:text-7xl font-black mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)] z-20 text-center mt-12 md:mt-0">
-                SOL DICE 🎲
-            </h1>
-
-            {/* Selector de Apuestas - Wrap para que baje de línea si no cabe */}
-            <div className="mb-8 flex flex-wrap justify-center gap-2 max-w-[90%] z-20">
+            {/* 2. SELECTOR DE APUESTAS */}
+            <div className="-mt-12 mb-2 flex flex-wrap justify-center gap-2 max-w-[95%] z-30 relative">
                 {apuestas.map((m) => (
                     <button key={m} onClick={() => setApuesta(m)}
-                        className={`px-3 py-2 font-bold rounded-lg border transition-all backdrop-blur-sm text-xs md:text-sm
-                            ${apuesta === m ? 'bg-purple-600/80 border-purple-400 text-white scale-105 shadow-lg' : 'bg-white/5 border-white/10 text-gray-400'}`}>
-                        {m}
+                        className={`px-3 py-1.5 font-bold rounded-md border transition-all backdrop-blur-sm text-xs md:text-sm skew-x-[-10deg] shadow-lg
+                            ${apuesta === m ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-[0_0_15px_rgba(0,255,255,0.4)]' : 'bg-black/60 border-white/10 text-gray-400 hover:text-white hover:border-white/30'}`}>
+                        <span className="skew-x-[10deg] inline-block">{m}</span>
                     </button>
                 ))}
             </div>
 
-            {/* DADO (Escalado en móvil para que no ocupe tanto) */}
-            <div className="mb-8 z-10 perspective-container transform scale-75 md:scale-100 origin-center">
+            {/* 3. DADO */}
+            <div className="mb-2 z-10 perspective-container transform scale-75 md:scale-100 origin-center">
                 <div className={`scene ${getDiceTierClass()}`}>
                     <div className={`cube ${girando ? 'rolling' : ''}`} style={{ transform: girando ? '' : dadoRotation }}>
                         <div className="cube__face cube__face--1 face-1"><span className="dot"></span></div>
@@ -197,44 +187,27 @@ export default function Home() {
                 </div>
             </div>
 
-            {/* Panel de Juego (Ancho completo en móvil con margen) */}
-            <div className="w-full max-w-sm bg-white/5 border border-white/10 p-5 rounded-3xl backdrop-blur-xl z-20 relative text-center shadow-2xl">
-                <p className="text-gray-300 mb-4 font-bold uppercase tracking-wider text-xs md:text-sm">
-                    PLAYING FOR <span className="text-white text-base md:text-xl ml-2 text-purple-300 font-black">{apuesta} SOL</span>
+            {/* 4. PANEL DE JUEGO */}
+            <div className="w-full max-w-sm bg-black/40 border border-purple-500/20 p-3 md:p-5 rounded-3xl backdrop-blur-xl z-20 relative text-center shadow-[0_0_30px_rgba(189,0,255,0.15)]">
+                <p className="text-cyan-400 mb-2 font-bold tracking-widest text-xs md:text-sm font-racing">
+                    PLAYING FOR <span className="text-white text-lg ml-1">{apuesta} SOL</span>
                 </p>
 
-                <div className="flex gap-4 mb-4">
-                    <button onClick={() => jugar(0)} disabled={loading} className="flex-1 py-4 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold shadow-lg disabled:opacity-50 text-lg md:text-xl">EVEN</button>
-                    <button onClick={() => jugar(1)} disabled={loading} className="flex-1 py-4 bg-pink-600 hover:bg-pink-500 rounded-xl font-bold shadow-lg disabled:opacity-50 text-lg md:text-xl">ODD</button>
+                <div className="flex gap-3 mb-2">
+                    <button onClick={() => jugar(0)} disabled={loading} className="flex-1 py-3 md:py-4 bg-gradient-to-r from-cyan-600 to-cyan-400 hover:from-cyan-500 hover:to-cyan-300 text-black font-black rounded-lg shadow-[0_0_20px_rgba(0,255,255,0.4)] disabled:opacity-50 text-lg md:text-xl font-racing italic transform transition-transform active:scale-95">EVEN</button>
+                    <button onClick={() => jugar(1)} disabled={loading} className="flex-1 py-3 md:py-4 bg-gradient-to-r from-purple-700 to-purple-500 hover:from-purple-600 hover:to-purple-400 text-white font-black rounded-lg shadow-[0_0_20px_rgba(189,0,255,0.4)] disabled:opacity-50 text-lg md:text-xl font-racing italic transform transition-transform active:scale-95">ODD</button>
                 </div>
 
-                {resultado && (
-                  <div className={`p-3 font-bold rounded-xl border animate-bounce ${ganador ? 'bg-green-500/20 border-green-500 text-green-400' : 'bg-red-500/20 border-red-500 text-red-400'}`}>
-                      {resultado}
-                  </div>
-                )}
-                
-                {txLink && <div className="mt-2"><a href={txLink} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-500 hover:text-white underline">View Tx</a></div>}
+                {resultado && <div className={`mt-1 p-2 font-bold rounded-lg border font-racing italic ${ganador ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400' : 'bg-red-500/20 border-red-500 text-red-400'}`}>{resultado}</div>}
+                {txLink && <div className="mt-1"><a href={txLink} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-500 hover:text-white underline">Tx Hash</a></div>}
             </div>
         </div>
 
-        {/* --- CHAT (Oculto en móvil, visible al clic) --- */}
-        <div className={`
-            fixed inset-0 z-[100] bg-black/95 transition-transform duration-300 transform 
-            md:relative md:translate-y-0 md:w-80 md:block md:bg-black md:border-l md:border-gray-800
-            ${mobileChatOpen ? 'translate-y-0' : 'translate-y-full md:translate-y-0'}
-        `}>
-            {/* Cabecera Móvil del Chat */}
-            <div className="md:hidden flex justify-between items-center p-4 border-b border-gray-800 bg-black">
-                <h2 className="text-white font-bold">💬 Chat</h2>
-                <button onClick={() => setMobileChatOpen(false)} className="text-gray-400 p-2">✕ Cerrar</button>
-            </div>
-            
-            <div className="h-full w-full pb-20 md:pb-0">
-                <SidebarChat />
-            </div>
+        {/* --- CHAT --- */}
+        <div className={`fixed inset-0 z-[100] bg-black/95 transition-transform duration-300 transform md:relative md:translate-y-0 md:w-80 md:block md:bg-black/80 md:backdrop-blur-md md:border-l md:border-white/5 ${mobileChatOpen ? 'translate-y-0' : 'translate-y-full md:translate-y-0'}`}>
+            <div className="md:hidden flex justify-between items-center p-4 border-b border-gray-800"><h2 className="text-white font-bold font-racing">CHAT</h2><button onClick={() => setMobileChatOpen(false)} className="text-gray-400 p-2">✕</button></div>
+            <div className="h-full w-full pb-20 md:pb-0"><SidebarChat /></div>
         </div>
-
     </div>
   );
 }

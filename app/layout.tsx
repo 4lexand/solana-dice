@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-// Importamos el archivo que creamos en el Paso 1
 import AppWalletProvider from "./components/WalletProvider";
+import "@solana/wallet-adapter-react-ui/styles.css"; // Aseguramos estilos de wallet aquí también
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Solana Degen Flip",
-  description: "Juego de Cara o Cruz en Solana",
+  title: "RollRush Casino",
+  description: "The fastest Solana Dice Game",
 };
 
 export default function RootLayout({
@@ -18,9 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      {/* suppressHydrationWarning={true} -> Esto calla el error del 'bis_register' 
-         causado por las extensiones de tu navegador.
-      */}
+      {/* Eliminamos ${racing.variable} porque ya no usamos esa fuente */}
       <body className={inter.className} suppressHydrationWarning={true}>
         <AppWalletProvider>
           {children}
